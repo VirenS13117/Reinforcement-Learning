@@ -1,6 +1,6 @@
 from random import randint, random
 
-from main import Action, State, GridBlock
+from main import Action, State, Environment
 
 
 def simulate(my_grid, current_state, action):
@@ -25,7 +25,7 @@ def simulate(my_grid, current_state, action):
 def play_simulation():
     source = (0, 0)
     target = (10, 10)
-    my_grid = GridBlock(source, target)
+    my_grid = Environment(source, target)
     print("Q1 : Simulate function")
     print("Please enter x coordinate in grid bounds")
     curr_state_x = int(input())  # randint(0, 10)

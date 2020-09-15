@@ -57,7 +57,7 @@ class State:
         self.y += action[1]
 
 
-class GridBlock:
+class Environment:
     def __init__(self, source, target):
         self.source = State(source[0], source[1])
         self.target = State(target[0], target[1])
