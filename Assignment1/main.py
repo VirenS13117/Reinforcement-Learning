@@ -7,7 +7,7 @@ from random import seed
 from random import randint, random
 
 # seed random number generator
-import q3
+import q1, q3
 
 seed(1)
 
@@ -87,7 +87,7 @@ class Environment:
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     print("Create Grid")
-    # q1.play_simulation()
+    q1.play_simulation()
     q3.cumulative_reward()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
