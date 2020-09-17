@@ -1,6 +1,6 @@
 from random import randint, random
 
-from main import Action, State, Environment
+from Assignment1.environment import Action, State, Environment
 
 
 def simulate(my_grid, current_state, action):
@@ -9,7 +9,7 @@ def simulate(my_grid, current_state, action):
     print("decision probability : ", decision_prob)
     if decision_prob < my_grid.prob:
         current_state.move(action.action_list[action.action])
-    elif my_grid.prob < decision_prob < my_grid.prob + (1-my_grid.prob)/2:
+    elif my_grid.prob < decision_prob < my_grid.prob + (1 - my_grid.prob) / 2:
         current_state.move(action.get_left_perpendicular())
     else:
         current_state.move(action.get_right_perpendicular())
