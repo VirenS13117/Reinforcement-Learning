@@ -1,6 +1,10 @@
+legal_actions = ["up", "down", "left", "right"]
+
 
 class Action:
     def __init__(self, action):
+        if action not in legal_actions:
+            raise ValueError("Enter action out of up, down , left or right!!!")
         self.action = action
         self.action_list = {"up": (0, 1), "down": (0, -1), "left": (-1, 0), "right": (1, 0)}
 

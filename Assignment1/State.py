@@ -4,6 +4,8 @@ class State:
         self.x = x
         self.y = y
         self.grid = grid
+        if self.out_of_bounds(x, y):
+            raise ValueError("current state cannot be out of bounds or closed blocks!!!")
 
     def out_of_bounds(self, next_x, next_y):
         return next_x < self.grid.left_limit or next_x > self.grid.right_limit \
