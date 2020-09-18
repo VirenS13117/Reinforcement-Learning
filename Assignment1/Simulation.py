@@ -20,7 +20,7 @@ class Simulation:
         for i in trial_rewards:
             plt.plot(i, linestyle='dashed')
 
-        plt.plot(average_bar, linewidth=2, label=self.policy.name)
+        plt.plot(average_bar, linewidth=3, label=self.policy.name)
         plt.ylabel('Cumulative reward')
         plt.xlabel('Steps')
         plt.legend()

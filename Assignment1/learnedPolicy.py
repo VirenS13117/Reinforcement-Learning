@@ -2,11 +2,9 @@ import random
 
 
 class LearnedPolicy:
-    def __init__(self, grid):
+    def __init__(self):
         self.name = "Learned"
-        height = grid.upper_limit - grid.lower_limit + 1
-        width = grid.right_limit - grid.left_limit + 1
-        self.lookup = [[{"up": 0, "down": 0, "left": 0, "right": 0}] * height] * width
+        self.lookup = [[{"up": 0, "down": 0, "left": 0, "right": 0}] * 11] * 11
         self.epsilon = 0.1
 
     def get_action(self, curr_state):
