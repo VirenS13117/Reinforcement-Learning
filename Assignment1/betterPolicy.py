@@ -23,4 +23,3 @@ class BetterPolicy:
             else:
                 return choice(["down", "left"])
         return choice(["up", "down", "left", "right"])
-    
