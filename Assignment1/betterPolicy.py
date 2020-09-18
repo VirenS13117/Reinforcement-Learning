@@ -2,14 +2,17 @@ from random import random, choice
 
 
 class BetterPolicy:
-    def __init__(self):
+    def __init__(self, grid):
         self.name = "Better"
+        height = grid.upper_limit - grid.lower_limit + 1
+        width = grid.right_limit - grid.left_limit + 1
+        self.lookup = [[{"up": 0, "down": 0, "left": 0, "right": 0}] * height] * width
         return
 
     def get_action(self, curr_state):
         action_prob = random()
         if action_prob < 0.8:
-            return choice(["up", "left", "down", "right"])
+            return choice(["up", "down", "left", "right"])
         if curr_state.x < 5:
             if curr_state.y >= 9:
                 return "down"

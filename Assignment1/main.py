@@ -4,7 +4,7 @@ import random
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 # generate random integer values
-from Assignment1 import environment, State, Action, randomPolicy, worsePolicy, betterPolicy, Simulation, manualPolicy
+from Assignment1 import environment, State, Action, randomPolicy, worsePolicy, betterPolicy, Simulation, manualPolicy, learnedPolicy
 
 random.seed()
 
@@ -20,7 +20,7 @@ def q1():
     print("Enter desired action : ")
     action = input()
     action_object = Action.Action(action)
-    random_policy = randomPolicy.RandomPolicy()
+    random_policy = randomPolicy.RandomPolicy(my_grid)
     simulation_object_random = Simulation.Simulation(my_grid, random_policy)
     curr_state, reward = simulation_object_random.transition(curr_state, action_object)
     print("Next state : ", curr_state.x, " ", curr_state.y)
@@ -48,7 +48,7 @@ def q3():
     source = (0, 0)
     target = (10, 10)
     my_grid = environment.Environment(source, target)
-    random_policy = randomPolicy.RandomPolicy()
+    random_policy = randomPolicy.RandomPolicy(my_grid)
     simulation_object_random = Simulation.Simulation(my_grid, random_policy)
     simulation_object_random.simulate()
     return
@@ -58,11 +58,10 @@ def q4():
     source = (0, 0)
     # fixed target
     target = (10, 10)
-    # random target
     my_grid = environment.Environment(source, target)
-    worse_policy = worsePolicy.WorsePolicy()
-    random_policy = randomPolicy.RandomPolicy()
-    better_policy = betterPolicy.BetterPolicy()
+    worse_policy = worsePolicy.WorsePolicy(my_grid)
+    random_policy = randomPolicy.RandomPolicy(my_grid)
+    better_policy = betterPolicy.BetterPolicy(my_grid)
     simulation_object_random = Simulation.Simulation(my_grid, random_policy)
     simulation_object_random.simulate()
     simulation_object_worse = Simulation.Simulation(my_grid, worse_policy)
@@ -73,6 +72,18 @@ def q4():
 
 
 def q5():
+    source = (0, 0)
+    # random target
+    target = (randint(0, 10), randint(0, 10))
+    my_grid = environment.Environment(source, target)
+    random_policy = randomPolicy.RandomPolicy(my_grid)
+    simulation_object_random = Simulation.Simulation(my_grid, random_policy)
+    simulation_object_random.simulate()
+    random_policy.print_lookup()
+    learned_policy = learnedPolicy.LearnedPolicy(my_grid)
+    simulation_object_learned = Simulation.Simulation(my_grid, learned_policy)
+    simulation_object_learned.simulate()
+    learned_policy.print_lookup()
     return
 
 
@@ -92,6 +103,5 @@ if __name__ == '__main__':
         q5()
     else:
         print("Please enter a correct question number to run the program")
-    print("Create ")
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
