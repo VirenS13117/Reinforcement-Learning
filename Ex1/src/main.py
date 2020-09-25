@@ -30,11 +30,11 @@ def q4(number_of_arms=10, iterations=100):
     return
 
 
-def run_bandit_trial(B, eps, steps, stationary=True, optimal_curve_plot=False, sample_average=True, alpha=1):
+def run_bandit_trial(B, eps, ucb, c, steps, stationary=True, optimal_curve_plot=False, sample_average=True, alpha=1):
     trial_rewards = []
     optimal_rewards = []
     for i in range(steps):
-        best_action = B.choose_action(eps)
+        best_action = B.choose_action(eps, ucb, c, i+1)
         reward = best_action.play_action()
         if sample_average:
             best_action.exponential_recency_weighted_average(reward, 1/(best_action.occurrence+1))
@@ -59,11 +59,18 @@ def plot_curve(runs, param_list, steps, average_blocks, total_optimal_rewards, o
         ydata_std /= np.sqrt(runs)
         ydata_std *= 1.96
         label_set = ''
-        if param_list[i].alpha == 1:
-            label_set += r'$\epsilon$ = ' + str(param_list[i].epsilon)
+        # if param_list[i].sample_average:
+        #     label_set += r'$\epsilon$ = ' + str(param_list[i].epsilon)
+        #     # label_set += r'; $Q_{1}$ = ' + str(param_list[i].initial_values[0])
+        #     # label_set += '; sample average'
+        # else:
+        #     label_set += r'$\epsilon$ = ' + str(param_list[i].epsilon)
+            # label_set += r'; $Q_{1}$ = ' + str(param_list[i].initial_values[0])
+            # label_set += '; constant step size with '+r'$\alpha$ = ' + str(param_list[i].alpha)
+        if param_list[i].ucb:
+            label_set = "UCB c = "+str(param_list[i].confidence_level)
         else:
-            label_set += r'$\epsilon$ = ' + str(param_list[i].epsilon)
-            label_set += r' $\alpha$ = ' + str(param_list[i].alpha)
+            label_set = "$\epsilon$ greedy $\epsilon$ = "+str(param_list[i].epsilon)
         plt.plot(xdata, ydata, linewidth=2, label=label_set)
         plt.fill_between(xdata, np.subtract(ydata, ydata_std), np.add(ydata, ydata_std), alpha=0.2)
     ydata = np.average(total_optimal_rewards[i], axis=0)
@@ -84,7 +91,7 @@ def plot_curve(runs, param_list, steps, average_blocks, total_optimal_rewards, o
     plt.show()
 
 
-def experiment(param_list, stationary=True, sample_average=True, optimal_curve_plot=False, number_of_arms=10, runs=200,
+def experiment(param_list, stationary=True, optimal_curve_plot=False, number_of_arms=10, runs=200,
                steps=1000):
     total_rewards = []
     total_optimal_rewards = []
@@ -106,8 +113,8 @@ def experiment(param_list, stationary=True, sample_average=True, optimal_curve_p
                 B.add_action(Action(j, 0), False)
         for params in range(len(param_list)):
             B.reset(true_values, param_list[params].initial_values)
-            rewards_per_eps, optimal_rewards_per_eps = run_bandit_trial(B, param_list[params].epsilon, steps, stationary,
-                                                                        optimal_curve_plot, sample_average, param_list[params].alpha)
+            rewards_per_eps, optimal_rewards_per_eps = run_bandit_trial(B, param_list[params].epsilon, param_list[params].ucb, param_list[params].confidence_level, steps, stationary,
+                                                                        optimal_curve_plot, param_list[params].sample_average, param_list[params].alpha)
             rewards_per_trial.append(rewards_per_eps)
             optimal_rewards_per_trial.append(optimal_rewards_per_eps)
         total_rewards.append(rewards_per_trial)
@@ -128,33 +135,32 @@ def experiment(param_list, stationary=True, sample_average=True, optimal_curve_p
 
 
 def q6(optimal_curve_plot, number_of_arms, runs, steps):
-    P1 = Params(0, 1, [0 for i in range(number_of_arms)])
-    P2 = Params(0.1, 1, [0 for i in range(number_of_arms)])
-    P3 = Params(0.01, 1, [0 for i in range(number_of_arms)])
-    experiment([P1, P2, P3], True, True, optimal_curve_plot, number_of_arms, runs, steps)
-    plt.show()
+    P1 = Params(0, 1, False, True, [0 for i in range(number_of_arms)])
+    P2 = Params(0.1, 1, False, True, [0 for i in range(number_of_arms)])
+    P3 = Params(0.01, 1, False, True, [0 for i in range(number_of_arms)])
+    experiment([P1, P2, P3], True, optimal_curve_plot, number_of_arms, runs, steps)
 
 
 def q7(optimal_curve_plot, number_of_arms, runs, steps):
-    P1 = Params(0.1, 1, [0 for i in range(number_of_arms)])
-    P2 = Params(0.1, 0.1, [0 for i in range(number_of_arms)])
-    experiment([P1, P2], False, False, optimal_curve_plot, number_of_arms, runs, steps)
-    plt.show()
+    P1 = Params(0.1, 1, False, True, [0 for i in range(number_of_arms)])
+    P2 = Params(0.1, 0.1, False, False, [0 for i in range(number_of_arms)])
+    experiment([P1, P2], False, optimal_curve_plot, number_of_arms, runs, steps)
 
 def q8(optimal_curve_plot, number_of_arms, runs, steps):
-    P1 = Params(0, 1, [5 for i in range(number_of_arms)])
-    P2 = Params(0.1, 1, [0 for i in range(number_of_arms)])
-    P3 = Params(0.1, 1, [5 for i in range(number_of_arms)])
-    P4 = Params(0, 1, [0 for i in range(number_of_arms)])
-    experiment([P1, P2, P3, P4], True, True, optimal_curve_plot, number_of_arms, runs, steps)
-    plt.show()
+    P1 = Params(0, 1, False, True, [5 for i in range(number_of_arms)])
+    P2 = Params(0.1, 1, False, True, [0 for i in range(number_of_arms)])
+    P3 = Params(0.1, 1, False, True, [5 for i in range(number_of_arms)])
+    P4 = Params(0, 1, False, True, [0 for i in range(number_of_arms)])
+    # experiment([P1, P2, P3, P4], True, True, optimal_curve_plot, number_of_arms, runs, steps)
+    P5 = Params(0, 1, True, True, [0 for i in range(number_of_arms)])
+    P6 = Params(0.1, 1, False, True, [0 for i in range(number_of_arms)])
+    experiment([P5, P6], True, optimal_curve_plot, number_of_arms, runs, steps)
 
 if __name__ == "__main__":
     number_of_arms = 10
     runs = 2000
-    steps = 1000
+    steps = 10000
     optimal_curve_plot = True
-    sample_average_method = True
     # q4(10,1000)
     # q6(optimal_curve_plot, number_of_arms, runs, steps)
     # q7(optimal_curve_plot, number_of_arms, runs, steps)

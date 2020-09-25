@@ -28,16 +28,33 @@ class Bandit:
             self.optimal_action = action
         return
 
-    def choose_action(self, epsilon):
-        val = random.random()
-        if val <= epsilon:
-            return random.choice(self.actions)
-        else:
-            all_values = [i.current_value for i in self.actions]
-            max_value = max(all_values)
-            action_list = []
-            for i in self.actions:
-                if i.current_value == max_value:
-                    action_list.append(i)
-            best_action = random.choice(action_list)
+    def choose_action(self, epsilon, ucb=False, c=2, t=1):
+        if ucb:
+            action_options = []
+            max_ucb_value = 0
+            ucb_values = []
+            ucb_dict = {}
+            for i in range(len(self.actions)):
+                curr_ucb_value = self.actions[i].current_value + c * np.sqrt(
+                    (np.log(t) / (self.actions[i].occurrence + 1)))
+                ucb_values.append(curr_ucb_value)
+                ucb_dict[self.actions[i]] = curr_ucb_value
+                max_ucb_value = max(max_ucb_value, curr_ucb_value)
+            for i in ucb_dict:
+                if ucb_dict[i]==max_ucb_value:
+                    action_options.append(i)
+            best_action = random.choice(action_options)
             return best_action
+        else:
+            val = random.random()
+            if val <= epsilon:
+                return random.choice(self.actions)
+            else:
+                all_values = [i.current_value for i in self.actions]
+                max_value = max(all_values)
+                action_list = []
+                for i in self.actions:
+                    if i.current_value == max_value:
+                        action_list.append(i)
+                best_action = random.choice(action_list)
+                return best_action
