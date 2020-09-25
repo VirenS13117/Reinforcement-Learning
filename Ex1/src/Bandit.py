@@ -7,10 +7,19 @@ class Bandit:
         self.actions = []
         self.optimal_action = 0
 
-    def reset(self):
+    def reset(self, true_values, initial_values):
+        for i in range(len(true_values)):
+            self.actions[i].current_value = 0
+            self.actions[i].occurrence = 0
+            self.actions[i].true_value = true_values[i]
+            self.actions[i].initial_value = initial_values[i]
+        return
+
+    def update(self):
         for action in self.actions:
-            action.current_value = 0
-            action.occurrence = 0
+            action.true_value += np.random.normal(0, 0.01)
+            if action.true_value > self.optimal_action.true_value:
+                self.optimal_action = action
         return
 
     def add_action(self, action, is_optimal=False):

@@ -5,12 +5,13 @@ import matplotlib.ticker as mtick
 import numpy as np
 from Ex1.src.Bandit import Bandit
 from Ex1.src.Action import Action
+from Ex1.src.Params import Params
 
 
 def q4(number_of_arms=10, iterations=100):
     true_values = np.random.normal(0, 1, number_of_arms)
     print(true_values)
-    B = Bandit(0)
+    B = Bandit()
     for i in true_values:
         B.add_action(Action(i, 0, 1))
     arm_rewards = [[] for i in range(number_of_arms)]
@@ -29,87 +30,133 @@ def q4(number_of_arms=10, iterations=100):
     return
 
 
-def run_bandit_trial(B, eps, steps, optimal_curve=False, optimal_action_trial=False):
+def run_bandit_trial(B, eps, steps, stationary=True, optimal_curve_plot=False, sample_average=True, alpha=1):
     trial_rewards = []
+    optimal_rewards = []
     for i in range(steps):
-        if optimal_action_trial:
-            best_action = B.optimal_action
-        else:
-            best_action = B.choose_action(eps)
+        best_action = B.choose_action(eps)
         reward = best_action.play_action()
-        best_action.sample_average_update(reward)
-        if optimal_curve:
+        if sample_average:
+            best_action.exponential_recency_weighted_average(reward, 1/(best_action.occurrence+1))
+        else:
+            best_action.exponential_recency_weighted_average(reward, alpha)
+        if not stationary:
+            B.update()
+        if optimal_curve_plot:
             trial_rewards.append(B.optimal_action == best_action)
+            optimal_rewards.append(1)
         else:
             trial_rewards.append(reward)
-    return trial_rewards
+            optimal_rewards.append(B.optimal_action.true_value)
+    return trial_rewards, optimal_rewards
 
 
-def plot_curve(runs, eps, steps, average_blocks, total_optimal_rewards, optimal_curve=False):
+def plot_curve(runs, param_list, steps, average_blocks, total_optimal_rewards, optimal_curve=False):
     xdata = [x for x in range(steps)]
-    for i in range(len(eps)):
+    for i in range(len(param_list)):
         ydata = np.average(average_blocks[i], axis=0)
         ydata_std = np.std(average_blocks[i], axis=0)
         ydata_std /= np.sqrt(runs)
         ydata_std *= 1.96
-        plt.plot(xdata, ydata, linewidth=2, label=r'$\epsilon$ = ' + str(eps[i]))
+        label_set = ''
+        if param_list[i].alpha == 1:
+            label_set += r'$\epsilon$ = ' + str(param_list[i].epsilon)
+        else:
+            label_set += r'$\epsilon$ = ' + str(param_list[i].epsilon)
+            label_set += r' $\alpha$ = ' + str(param_list[i].alpha)
+        plt.plot(xdata, ydata, linewidth=2, label=label_set)
         plt.fill_between(xdata, np.subtract(ydata, ydata_std), np.add(ydata, ydata_std), alpha=0.2)
-
-    ydata = np.average(total_optimal_rewards, axis=0)
-
+    ydata = np.average(total_optimal_rewards[i], axis=0)
     plt.plot(xdata, ydata, linewidth=1)
+
     if optimal_curve:
         plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(1))
 
     if optimal_curve:
         plt.ylabel('% Optimal Action')
-        plt.title("Optimal action % per step with different epsilon values")
+        # plt.title("Optimal action % per step with different epsilon values")
     else:
         plt.ylabel('Average reward')
-        plt.title("Average performance of $\epsilon$ greedy method on 10 arm testbed")
+        # plt.title("Average performance of $\epsilon$ greedy method on 10 arm testbed")
     plt.xlabel('Steps')
 
     plt.legend()
     plt.show()
 
 
-def q6(eps, optimal_curve=False, number_of_arms=10, runs=200, steps=1000):
+def experiment(param_list, stationary=True, sample_average=True, optimal_curve_plot=False, number_of_arms=10, runs=200,
+               steps=1000):
     total_rewards = []
     total_optimal_rewards = []
+    optimal_value = 0
     for i in range(runs):
-        true_values = np.random.normal(0, 1, number_of_arms)
+        if not stationary:
+            true_values = [0 for i in range(number_of_arms)]
+        else:
+            true_values = np.random.normal(0, 1, number_of_arms)
         max_value = max(true_values)
+        optimal_value += max_value
         B = Bandit()
         rewards_per_trial = []
+        optimal_rewards_per_trial = []
         for j in true_values:
             if j == max_value:
-                B.add_action(Action(j, 0, 1), True)
+                B.add_action(Action(j, 0), True)
             else:
-                B.add_action(Action(j, 0, 1), False)
-        optimal_rewards = run_bandit_trial(B, 0, steps, optimal_curve, optimal_action_trial=True)
-        total_optimal_rewards.append(optimal_rewards)
-        for epsilon in range(len(eps)):
-            B.reset()
-            rewards_per_eps = run_bandit_trial(B, eps[epsilon], steps, optimal_curve, optimal_action_trial=False)
+                B.add_action(Action(j, 0), False)
+        for params in range(len(param_list)):
+            B.reset(true_values, param_list[params].initial_values)
+            rewards_per_eps, optimal_rewards_per_eps = run_bandit_trial(B, param_list[params].epsilon, steps, stationary,
+                                                                        optimal_curve_plot, sample_average, param_list[params].alpha)
             rewards_per_trial.append(rewards_per_eps)
+            optimal_rewards_per_trial.append(optimal_rewards_per_eps)
         total_rewards.append(rewards_per_trial)
+        total_optimal_rewards.append(optimal_rewards_per_trial)
 
     average_blocks = []
-    for i in range(len(eps)):
+    average_optimal_blocks = []
+    for i in range(len(param_list)):
         eps_block = []
+        eps_optimal = []
         for j in range(runs):
             eps_block.append(total_rewards[j][i])
+            eps_optimal.append(total_optimal_rewards[j][i])
         average_blocks.append(eps_block)
+        average_optimal_blocks.append(eps_optimal)
 
-    plot_curve(runs, eps, steps, average_blocks, total_optimal_rewards, optimal_curve)
+    plot_curve(runs, param_list, steps, average_blocks, average_optimal_blocks, optimal_curve_plot)
 
+
+def q6(optimal_curve_plot, number_of_arms, runs, steps):
+    P1 = Params(0, 1, [0 for i in range(number_of_arms)])
+    P2 = Params(0.1, 1, [0 for i in range(number_of_arms)])
+    P3 = Params(0.01, 1, [0 for i in range(number_of_arms)])
+    experiment([P1, P2, P3], True, True, optimal_curve_plot, number_of_arms, runs, steps)
+    plt.show()
+
+
+def q7(optimal_curve_plot, number_of_arms, runs, steps):
+    P1 = Params(0.1, 1, [0 for i in range(number_of_arms)])
+    P2 = Params(0.1, 0.1, [0 for i in range(number_of_arms)])
+    experiment([P1, P2], False, False, optimal_curve_plot, number_of_arms, runs, steps)
+    plt.show()
+
+def q8(optimal_curve_plot, number_of_arms, runs, steps):
+    P1 = Params(0, 1, [5 for i in range(number_of_arms)])
+    P2 = Params(0.1, 1, [0 for i in range(number_of_arms)])
+    P3 = Params(0.1, 1, [5 for i in range(number_of_arms)])
+    P4 = Params(0, 1, [0 for i in range(number_of_arms)])
+    experiment([P1, P2, P3, P4], True, True, optimal_curve_plot, number_of_arms, runs, steps)
+    plt.show()
 
 if __name__ == "__main__":
-    epsilon_list = [0, 0.1, 0.01]
     number_of_arms = 10
     runs = 2000
-    step = 1000
-    optimal_curve = True
-    # q4(10,10000)
-    q6(epsilon_list, optimal_curve, number_of_arms, runs, step)
+    steps = 1000
+    optimal_curve_plot = True
+    sample_average_method = True
+    # q4(10,1000)
+    # q6(optimal_curve_plot, number_of_arms, runs, steps)
+    # q7(optimal_curve_plot, number_of_arms, runs, steps)
+    q8(optimal_curve_plot, number_of_arms, runs, steps)
     # q2(0.01)
