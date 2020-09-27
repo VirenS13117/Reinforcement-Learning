@@ -1,6 +1,6 @@
 import random
 import numpy as np
-
+import math
 
 class Bandit:
     def __init__(self):
@@ -35,8 +35,7 @@ class Bandit:
             ucb_values = []
             ucb_dict = {}
             for i in range(len(self.actions)):
-                curr_ucb_value = self.actions[i].current_value + c * np.sqrt(
-                    (np.log(t) / (self.actions[i].occurrence + 1)))
+                curr_ucb_value = self.actions[i].current_value + c * math.sqrt((np.log(t) / (self.actions[i].occurrence + 1)))
                 ucb_values.append(curr_ucb_value)
                 ucb_dict[self.actions[i]] = curr_ucb_value
                 max_ucb_value = max(max_ucb_value, curr_ucb_value)
