@@ -41,7 +41,7 @@ class Bandit:
                 ucb_dict[self.actions[i]] = curr_ucb_value
                 max_ucb_value = max(max_ucb_value, curr_ucb_value)
             for i in ucb_dict:
-                if ucb_dict[i]==max_ucb_value:
+                if ucb_dict[i] == max_ucb_value:
                     action_options.append(i)
             best_action = random.choice(action_options)
             return best_action

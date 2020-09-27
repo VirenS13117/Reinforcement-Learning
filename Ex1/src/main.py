@@ -13,7 +13,7 @@ def q4(number_of_arms=10, iterations=100):
     print(true_values)
     B = Bandit()
     for i in true_values:
-        B.add_action(Action(i, 0, 1))
+        B.add_action(Action(i, 0))
     arm_rewards = [[] for i in range(number_of_arms)]
     for i, action in enumerate(B.actions):
         for itr in range(iterations):
@@ -22,10 +22,11 @@ def q4(number_of_arms=10, iterations=100):
     fig = plt.figure()
     # Create an axes instance
     ax = fig.gca()
+    ax.yaxis.grid(True)
     plt.ylabel('Reward Distribution')
     plt.xlabel('Action')
     # Create the violinplot
-    violinplot = ax.violinplot(arm_rewards)
+    violinplot = ax.violinplot(arm_rewards,showmeans = True)
     plt.show()
     return
 
@@ -59,18 +60,18 @@ def plot_curve(runs, param_list, steps, average_blocks, total_optimal_rewards, o
         ydata_std /= np.sqrt(runs)
         ydata_std *= 1.96
         label_set = ''
-        # if param_list[i].sample_average:
-        #     label_set += r'$\epsilon$ = ' + str(param_list[i].epsilon)
-        #     # label_set += r'; $Q_{1}$ = ' + str(param_list[i].initial_values[0])
-        #     # label_set += '; sample average'
-        # else:
-        #     label_set += r'$\epsilon$ = ' + str(param_list[i].epsilon)
+        if param_list[i].sample_average:
+            label_set += r'$\epsilon$ = ' + str(param_list[i].epsilon)
             # label_set += r'; $Q_{1}$ = ' + str(param_list[i].initial_values[0])
-            # label_set += '; constant step size with '+r'$\alpha$ = ' + str(param_list[i].alpha)
-        if param_list[i].ucb:
-            label_set = "UCB c = "+str(param_list[i].confidence_level)
+            # label_set += '; sample average'
         else:
-            label_set = "$\epsilon$ greedy $\epsilon$ = "+str(param_list[i].epsilon)
+            label_set += r'$\epsilon$ = ' + str(param_list[i].epsilon)
+            label_set += r'; $Q_{1}$ = ' + str(param_list[i].initial_values[0])
+            label_set += '; constant step size with '+r'$\alpha$ = ' + str(param_list[i].alpha)
+        # if param_list[i].ucb:
+        #     label_set = "UCB c = "+str(param_list[i].confidence_level)
+        # else:
+        #     label_set = "$\epsilon$ greedy $\epsilon$ = "+str(param_list[i].epsilon)
         plt.plot(xdata, ydata, linewidth=2, label=label_set)
         plt.fill_between(xdata, np.subtract(ydata, ydata_std), np.add(ydata, ydata_std), alpha=0.2)
     ydata = np.average(total_optimal_rewards[i], axis=0)
@@ -151,18 +152,17 @@ def q8(optimal_curve_plot, number_of_arms, runs, steps):
     P2 = Params(0.1, 1, False, True, [0 for i in range(number_of_arms)])
     P3 = Params(0.1, 1, False, True, [5 for i in range(number_of_arms)])
     P4 = Params(0, 1, False, True, [0 for i in range(number_of_arms)])
-    # experiment([P1, P2, P3, P4], True, True, optimal_curve_plot, number_of_arms, runs, steps)
-    P5 = Params(0, 1, True, True, [0 for i in range(number_of_arms)])
-    P6 = Params(0.1, 1, False, True, [0 for i in range(number_of_arms)])
-    experiment([P5, P6], True, optimal_curve_plot, number_of_arms, runs, steps)
+    experiment([P1, P2, P3, P4], True, optimal_curve_plot, number_of_arms, runs, steps)
+    # P5 = Params(0, 1, True, True, [0 for i in range(number_of_arms)])
+    # P6 = Params(0.1, 1, False, True, [0 for i in range(number_of_arms)])
+    # experiment([P5, P6], True, optimal_curve_plot, number_of_arms, runs, steps)
 
 if __name__ == "__main__":
     number_of_arms = 10
     runs = 2000
     steps = 10000
-    optimal_curve_plot = True
-    # q4(10,1000)
+    optimal_curve_plot = False
+    # q4(10,10000)
     # q6(optimal_curve_plot, number_of_arms, runs, steps)
     # q7(optimal_curve_plot, number_of_arms, runs, steps)
-    q8(optimal_curve_plot, number_of_arms, runs, steps)
-    # q2(0.01)
+    # q8(optimal_curve_plot, number_of_arms, runs, steps)
