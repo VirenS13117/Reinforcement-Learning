@@ -148,20 +148,20 @@ def q7(optimal_curve_plot, number_of_arms, runs, steps):
     experiment([P1, P2], False, optimal_curve_plot, number_of_arms, runs, steps)
 
 def q8(optimal_curve_plot, number_of_arms, runs, steps):
-    # P1 = Params(0, 1, False, True, [5 for i in range(number_of_arms)])
-    # P2 = Params(0.1, 1, False, True, [0 for i in range(number_of_arms)])
-    # P3 = Params(0.1, 1, False, True, [5 for i in range(number_of_arms)])
-    # P4 = Params(0, 1, False, True, [0 for i in range(number_of_arms)])
-    # experiment([P1, P2, P3, P4], True, optimal_curve_plot, number_of_arms, runs, steps)
-    P5 = Params(0, 1, True, True, [0 for i in range(number_of_arms)])
-    P6 = Params(0.1, 1, False, True, [0 for i in range(number_of_arms)])
-    experiment([P5, P6], True, optimal_curve_plot, number_of_arms, runs, steps)
+    P1 = Params(0, 1, False, True, [5 for i in range(number_of_arms)])
+    P2 = Params(0.1, 1, False, True, [0 for i in range(number_of_arms)])
+    P3 = Params(0.1, 1, False, True, [5 for i in range(number_of_arms)])
+    P4 = Params(0, 1, False, True, [0 for i in range(number_of_arms)])
+    experiment([P1, P2, P3, P4], True, optimal_curve_plot, number_of_arms, runs, steps)
+    # P5 = Params(0, 1, True, True, [0 for i in range(number_of_arms)])
+    # P6 = Params(0.1, 1, False, True, [0 for i in range(number_of_arms)])
+    # experiment([P5, P6], True, optimal_curve_plot, number_of_arms, runs, steps)
 
 if __name__ == "__main__":
     number_of_arms = 10
     runs = 2000
     steps = 10000
-    optimal_curve_plot = False
+    optimal_curve_plot = True
     # q4(10,10000)
     # q6(optimal_curve_plot, number_of_arms, runs, steps)
     # q7(optimal_curve_plot, number_of_arms, runs, steps)
