@@ -1,5 +1,3 @@
-from Ex3.src.Action import Action
-from Ex3.src.Transition import Transition
 from Ex3.src.GridWorld import GridWorld
 from Ex3.src.Policy import Policy
 import numpy as np
@@ -20,7 +18,6 @@ def iterative_policy_evaluation(gw, policy, value_state, gamma, theta=10 ** -3):
                 value_state[row][col] = new_state_value
         if delta < theta:
             break
-        print(delta)
     return np.round(value_state, 1)
 
 
@@ -121,6 +118,6 @@ def q_c():
     return
 
 if __name__ == "__main__":
-    # q_a()
-    # q_b()
+    q_a()
+    q_b()
     q_c()
