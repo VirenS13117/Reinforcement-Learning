@@ -1,4 +1,3 @@
-# from  Ex4.src. import GridWorld
 import matplotlib.pyplot as plt
 
 
@@ -8,4 +7,4 @@ class Policy:
         return
 
     def get_action(self, observation):
-        return observation < 20
+        return observation[0] < 20

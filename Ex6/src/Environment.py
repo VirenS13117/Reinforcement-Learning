@@ -12,6 +12,10 @@ class Grid:
         self.blocks = blocks
         return
 
+    def change_blocklist(self, new_blocks):
+        self.blocks = new_blocks
+        return
+
     def is_goal(self, state):
         return state[0] == self.goal_state[0] and state[1] == self.goal_state[1]
 
@@ -35,23 +39,28 @@ class Grid:
     def isLegalState(self, curr_state):
         return (curr_state not in self.blocks) and (self.min_x <= curr_state[0] <= self.max_x) and (self.min_y <= curr_state[1] <= self.max_y)
 
-    def step(self, action):
-        reward = -1
+    def make_transition(self, state, action):
+        reward = 0
         done = False
-        self.curr_state = self.make_move(self.get_action_name(action))
+        curr_state = self.make_move(state, self.get_action_name(action))
+        if self.is_goal(curr_state):
+            reward = 1
+            done = True
+        return curr_state, reward, done, {}
+
+    def step(self, action):
+        reward = 0
+        done = False
+        self.curr_state = self.make_move(self.curr_state, self.get_action_name(action))
         if self.is_goal(self.curr_state):
-            reward = 0
+            reward = 1
             done = True
         return self.curr_state, reward, done, {}
 
     def get_current_state(self):
         return self.curr_state
 
-    def get_wind_strength(self, state):
-        return self.wind_strength[state[0]]
-
-    def make_move(self, action):
-        state = self.curr_state
+    def make_move(self, state, action):
         dx, dy = 0, 0
         new_state = state
         if action == "up":
@@ -66,6 +75,6 @@ class Grid:
             print("wrong action : ", action)
             return new_state
         new_state = (state[0]+dx, state[1]+dy)
-        if self.isLegalAction(new_state):
+        if self.isLegalState(new_state):
             return new_state
         return state
