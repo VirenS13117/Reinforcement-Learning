@@ -14,21 +14,19 @@ from Ex7.src.tiles3 import IHT, tiles
 
 env = gym.make('MountainCar-v0')
 
-num_episodes = 104
 discount_factor = 1
-alpha = 0.1
 nA = env.action_space.n
 numTilings = 8
 maxSize = 4096
 iht = IHT(maxSize)
 
 plt_actions = np.zeros(nA)
-episode_rewards = np.zeros(num_episodes)
 
 
 def featurize_state(state, action=0):
     x, y = state
     featurized = tiles(iht, 8, [8 * x / (0.5 + 1.2), 8 * y / (0.07 + 0.07)], [action])
+    features = np.zeros((8,maxSize))
     features = [0 for i in range(maxSize)]
     for i in featurized:
         features[i] = 1
@@ -66,31 +64,29 @@ def check_gradients(index, state, next_state, target, action, next_action, weigh
 
     return grad[0]
 
-def one_step_SARSA(w):
-    for e in trange(num_episodes):
-        state = env.reset()
-        while True:
-            action = policy(state, w)
-            plt_actions[action] += 1
-            next_state, reward, done, _ = env.step(action)
-            if done:
-                td_error = Q(state, action, w) - reward
-                dw = np.dot(td_error, featurize_state(state, action))
-                w -= alpha * dw
-                break
-            next_action = policy(next_state,w)
-            episode_rewards[e] += reward
-            target = reward + discount_factor * Q(next_state, next_action, w)
-            td_error = Q(state, action, w) - target
+def one_step_SARSA(alpha, w):
+    state = env.reset()
+    step_count = 0
+    while True:
+        step_count += 1
+        action = policy(state, w)
+        plt_actions[action] += 1
+        next_state, reward, done, _ = env.step(action)
+        if done:
+            td_error = Q(state, action, w) - reward
             dw = np.dot(td_error, featurize_state(state, action))
-            w -= alpha*dw
-            # if done:
-            #     break
-            state = next_state
-    return w
+            w -= alpha * dw
+            break
+        next_action = policy(next_state,w)
+        target = reward + discount_factor * Q(next_state, next_action, w)
+        td_error = Q(state, action, w) - target
+        dw = np.dot(td_error, featurize_state(state, action))
+        w -= alpha*dw
+        state = next_state
+    return w, step_count
 
 
-def plot_cost_to_go_mountain_car(w, num_tiles=64):
+def plot_cost_to_go_mountain_car(w, num_episodes, num_tiles=64):
     x = np.linspace(env.observation_space.low[0], env.observation_space.high[0], num=num_tiles)
     y = np.linspace(env.observation_space.low[1], env.observation_space.high[1], num=num_tiles)
     X, Y = np.meshgrid(x, y)
@@ -107,13 +103,39 @@ def plot_cost_to_go_mountain_car(w, num_tiles=64):
     plt.show()
 
 
-if __name__=="__main__":
-    w = np.zeros(maxSize)
-    w = one_step_SARSA(w)
-    # plt.bar(np.arange(nA), plt_actions)
-    # plt.figure()
-    # plt.plot(np.arange(num_episodes), episode_rewards)
-    # plt.show()
-    plot_cost_to_go_mountain_car(w)
+def avg_steps_per_episode():
+    alphas = [0.1/8, 0.2/8, 0.5/8]
+    alpha_names = ["0.1/8", "0.2/8", "0.5/8"]
+    num_episode = 500
+    num_avg = 10
+    steps_per_episode = np.zeros((len(alphas), num_episode))
+    for k in range(num_avg):
+        for i in range(len(alphas)):
+            alpha = alphas[i]
+            w = np.zeros(maxSize)
+            for j in trange(num_episode):
+                w, step = one_step_SARSA(alpha, w)
+                steps_per_episode[i,j] += step
+    for i in range(len(alphas)):
+        for j in range(num_episode):
+            steps_per_episode[i,j] /= num_avg
 
+    e = [i for i in range(num_episode)]
+    for i in range(0, len(alphas)):
+        plt.plot(e, steps_per_episode[i], label='alpha = '+alpha_names[i])
+    plt.xlabel('Episode')
+    plt.ylabel('Steps per episode')
+    plt.yscale('log')
+    plt.legend()
+    plt.show()
+
+if __name__=="__main__":
+    number_of_episodes = [1,12,104,1000,9000]
+    for i in range(len(number_of_episodes)):
+        w = np.zeros(maxSize)
+        episodes = number_of_episodes[i]
+        for j in trange(episodes):
+            w, step = one_step_SARSA(0.1,w)
+        plot_cost_to_go_mountain_car(w, episodes)
+    # avg_steps_per_episode()
     env.close()
